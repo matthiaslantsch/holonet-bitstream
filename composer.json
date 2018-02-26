@@ -11,5 +11,7 @@
 	"autoload": {
 		"psr-4": {"holonet\\bitstream\\": "src"}
 	},
-	"require": {}
+	"require": {
+		"holonet/common": "dev-develop"
+	}
 }
