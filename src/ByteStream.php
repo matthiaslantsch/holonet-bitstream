@@ -50,6 +50,7 @@ class ByteStream {
 	 * @return void
 	 */
 	public function __construct($stream, $encoding = "f") {
+		die(var_dump(stream_get_meta_data($stream)));
 		if(is_resource($stream) === false) {
 			throw new InvalidArgumentException(
 				sprintf(

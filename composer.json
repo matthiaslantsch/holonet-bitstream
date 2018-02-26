@@ -1,0 +1,15 @@
+{
+	"name": "holonet/bitstream",
+	"description": "Object oriented wrapper classes around a stream to make working with binary files easier.",
+	"type": "library",
+	"authors": [
+		{
+			"name": "matthias.lantsch",
+			"email": "matthias.lantsch@bluewin.ch"
+		}
+	],
+	"autoload": {
+		"psr-4": {"holonet\\bitstream\\": "src"}
+	},
+	"require": {}
+}

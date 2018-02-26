@@ -107,7 +107,7 @@ class BytewiseStream {
 		}
 
 		//read with unpack instead (faster?!?)
-		$bytes = $this->bytestream->readBytes(2);
+		$bytes = $this->bytestream->rbytes(2);
 		if($bytes === false) {
 			return false;
 		}
@@ -130,7 +130,7 @@ class BytewiseStream {
 		}
 
 		//read with unpack instead (faster?!?)
-		$bytes = $this->bytestream->readBytes(4);
+		$bytes = $this->bytestream->rbytes(4);
 		if($bytes === false) {
 			return false;
 		}
@@ -167,6 +167,17 @@ class BytewiseStream {
 			$ret .= $byte;
 		}
 		return $ret;
+	}
+
+	/**
+	 * wrapper method used to write a null terminated (cstring) string to the stream
+	 *
+	 * @access public
+	 * @param  string $str The string that should be written to the stream
+	 * @return void
+	 */
+	public function writeCString(string $str) {
+		$this->bytestream->wbytes("{$str}\0");
 	}
 
 }
