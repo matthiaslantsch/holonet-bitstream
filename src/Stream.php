@@ -376,6 +376,22 @@ abstract class Stream {
 	}
 
 	/**
+	 * function used to skip the rest of the started byte and then reading new bytes
+	 *
+	 * @access public
+	 * @param  integer $len The length of the requested string
+	 * @return string with the read bytes
+	 */
+	public function readAlignedBytes(int $len) {
+		$this->align();
+		$ret = $this->readBytes($len);
+		if($ret === false) {
+			return "";
+		}
+		return $ret;
+	}
+
+	/**
 	 * small method returning the actual object that we are wrapping around
 	 * is a different type based on the implementation
 	 *
@@ -452,16 +468,6 @@ abstract class Stream {
 	 * @return string The data that has been read
 	 */
 	abstract public function getContents();
-
-	/**
-	 * force the child class to implement a method to write bytes to the stream
-	 *
-	 * @access protected
-	 * @param  string $string The string that is to be written.
-	 * @param  integer $length If the length argument is given, writing will stop after length bytes have been written or the end of string is reached, whichever comes first.
-	 * @return integer Number of bytes written
-	 */
-	 abstract protected function wbytes($string, $length = null);
 
  	/**
  	 * force the child class to implement a pipe() method
