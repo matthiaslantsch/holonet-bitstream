@@ -93,7 +93,7 @@ abstract class Stream {
 	 */
 	public function readBytes(int $len) {
 		if($len === 0) {
-			return 0;
+			return "";
 		}
 
 		//if no byte has been started simply read whole bytes
@@ -133,7 +133,7 @@ abstract class Stream {
 	 */
 	public function readBits($len) {
 		if($len === 0) {
-			return 0;
+			return "";
 		}
 
 		//if no byte has been started and the number is even, simply use the byte reading method
