@@ -365,6 +365,17 @@ abstract class Stream {
 	}
 
 	/**
+	 * function used to skip the rest of the started byte and continuing at a new one
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function align() {
+		$this->currentbyte = null;
+		$this->byteshift = 0;
+	}
+
+	/**
 	 * small method returning the actual object that we are wrapping around
 	 * is a different type based on the implementation
 	 *
