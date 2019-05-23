@@ -3,7 +3,7 @@
  * This file is part of the bitstream package
  * (c) Matthias Lantsch
  *
- * class file for the ByteStream class
+ * class file for the StreamResource class
  *
  * @package holonet bitstream library
  * @license http://www.wtfpl.net/ Do what the fuck you want Public License
@@ -13,12 +13,12 @@
 namespace holonet\bitstream;
 
 /**
- * The ByteStream is an object oriented wrapper around a stream resource
+ * The StreamResource is an object oriented wrapper around a stream resource
  *
  * @author  matthias.lantsch
  * @package holonet\bitstream
  */
-class ByteStream {
+class StreamResource {
 
 	/**
 	 * property containing an identifier for the correct compression method used to open the stream
@@ -50,7 +50,6 @@ class ByteStream {
 	 * @return void
 	 */
 	public function __construct($stream, $encoding = "f") {
-		die(var_dump(stream_get_meta_data($stream)));
 		if(is_resource($stream) === false) {
 			throw new InvalidArgumentException(
 				sprintf(
@@ -64,7 +63,7 @@ class ByteStream {
 			throw new InvalidArgumentException("Encoding must be a valid encoding (gz, bz or f). {$encoding} given.");
 		}
 
-		$this->bytestream = $stream;
+		$this->stream = $stream;
 		$this->encoding = $encoding;
 	}
 
@@ -78,14 +77,14 @@ class ByteStream {
 	public function tell() {
 		switch ($this->encoding) {
 			case 'gz':
-				return gztell($this->bytestream);
+				return gztell($this->stream);
 				break;
 			case 'bz':
-				return bztell($this->bytestream);
+				return bztell($this->stream);
 				break;
 			case 'f':
 			default:
-				return ftell($this->bytestream);
+				return ftell($this->stream);
 				break;
 		}
 	}
@@ -100,12 +99,12 @@ class ByteStream {
 	public function seek() {
 		switch ($this->encoding) {
 			case 'gz':
-				return gzseek($this->bytestream);
+				return gzseek($this->stream);
 			case 'bz':
-				return bzseek($this->bytestream);
+				return bzseek($this->stream);
 			case 'f':
 			default:
-				return fseek($this->bytestream);
+				return fseek($this->stream);
 		}
 	}
 
@@ -119,12 +118,12 @@ class ByteStream {
 	public function rewind() {
 		switch ($this->encoding) {
 			case 'gz':
-				return gzrewind($this->bytestream);
+				return gzrewind($this->stream);
 			case 'bz':
-				return bzrewind($this->bytestream);
+				return bzrewind($this->stream);
 			case 'f':
 			default:
-				return rewind($this->bytestream);
+				return rewind($this->stream);
 		}
 	}
 
@@ -138,12 +137,12 @@ class ByteStream {
 	public function eof() {
 		switch ($this->encoding) {
 			case 'gz':
-				return gzeof($this->bytestream);
+				return gzeof($this->stream);
 			case 'bz':
-				return bzeof($this->bytestream);
+				return bzeof($this->stream);
 			case 'f':
 			default:
-				return feof($this->bytestream);
+				return feof($this->stream);
 		}
 	}
 
@@ -169,12 +168,12 @@ class ByteStream {
 	public function __destruct() {
 		switch ($this->encoding) {
 			case 'gz':
-				return gzclose($this->bytestream);
+				return gzclose($this->stream);
 			case 'bz':
-				return bzclose($this->bytestream);
+				return bzclose($this->stream);
 			case 'f':
 			default:
-				return fclose($this->bytestream);
+				return fclose($this->stream);
 		}
 	}
 
@@ -186,15 +185,15 @@ class ByteStream {
 	 * @param  integer $len Number of bytes to be read
 	 * @return string Binary data that was read from the stream
 	 */
-	private function rbytes($len) {
+	public function rbytes($len) {
 		switch ($this->encoding) {
 			case 'gz':
-				return gzread($this->bytestream, $len);
+				return gzread($this->stream, $len);
 			case 'bz':
-				return bzread($this->bytestream, $len);
+				return bzread($this->stream, $len);
 			case 'f':
 			default:
-				return fread($this->bytestream, $len);
+				return fread($this->stream, $len);
 		}
 	}
 
@@ -206,15 +205,15 @@ class ByteStream {
 	 * @param  string $bytes Binary data to be written to the stream
 	 * @return integer Number of bytes written to the stream
 	 */
-	private function wbytes($bytes) {
+	public function wbytes($bytes) {
 		switch ($this->encoding) {
 			case 'gz':
-				return gzwrite($this->bytestream, $bytes);
+				return gzwrite($this->stream, $bytes);
 			case 'bz':
-				return bzwrite($this->bytestream, $bytes);
+				return bzwrite($this->stream, $bytes);
 			case 'f':
 			default:
-				return fwrite($this->bytestream, $bytes);
+				return fwrite($this->stream, $bytes);
 		}
 	}
 

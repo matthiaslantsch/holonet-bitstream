@@ -12,6 +12,7 @@
 		"psr-4": {"holonet\\bitstream\\": "src"}
 	},
 	"require": {
-		"holonet/common": "dev-develop"
+		"holonet/common": "dev-develop",
+		"ext-gmp": "*"
 	}
 }

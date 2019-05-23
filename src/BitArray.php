@@ -60,7 +60,7 @@ class BitArray {
 	public function append($bits, $sizeInBits) {
 		if($this->value === null) {
 			if($this->gmp) {
-				$this->value = gmp_init($this->readBits($bits), 10);
+				$this->value = gmp_init($bits, 10);
 			} else {
 				$this->value = $bits;
 			}
