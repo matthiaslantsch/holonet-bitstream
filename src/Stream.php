@@ -75,6 +75,16 @@ abstract class Stream {
 	protected $isOpen;
 
 	/**
+	 * convenience function reading a single byte from the stream
+	 *
+	 * @access public
+	 * @return string|boolean Binary read data from the byte stream or false if the stream is finished already
+	 */
+	public function readByte() {
+		return $this->readBytes(1);
+	}
+
+	/**
 	 * method used to read bytes directly from the stream
 	 *
 	 * @access public
