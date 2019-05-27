@@ -78,10 +78,15 @@ abstract class Stream {
 	 * convenience function reading a single byte from the stream
 	 *
 	 * @access public
+	 * @param  bool $asBinaryString Boolean flag determing wheter to return a binary string or a number
 	 * @return string|boolean Binary read data from the byte stream or false if the stream is finished already
 	 */
-	public function readByte() {
-		return $this->readBytes(1);
+	public function readByte(bool $asBinaryString = false) {
+		if($asBinaryString) {
+			return $this->rbytes(1);
+		} else {
+			return ord($this->rbytes(1));
+		}
 	}
 
 	/**
@@ -89,33 +94,25 @@ abstract class Stream {
 	 *
 	 * @access public
 	 * @param  int $len Number of bytes to read
+	 * @param  bool $asBinaryString Boolean flag determing wheter to return a binary string or a number
 	 * @return string|boolean Binary read data from the byte stream or false if the stream is finished already
 	 */
-	public function readBytes(int $len) {
+	public function readBytes(int $len, bool $asBinaryString = false) {
 		if($len === 0) {
-			return "";
+			return ($asBinaryString ? "" : 0);
 		}
 
 		//if no byte has been started simply read whole bytes
 		if($this->currentbyte === null) {
-			return $this->rbytes($len);
-			//I am unsure what this was for except for big numbers but we'll see
-			if($len > PHP_INT_SIZE) {
+			if($asBinaryString) {
+				return $this->rbytes($len);
+			} else {
 				$ret = new BitArray($len * 8);
-				//read 20 bytes at a time
-				for ($i = 0; $i < $len; $i += 20) {
-					if($len < 20) {
-						$reads = $len;
-					} else {
-						$reads = 20;
-					}
-
+				for ($i = 0; $i < $len; $i++) {
 					//append the read 20 bytes to the bit array
-					$ret->append($this->rbytes($len), $reads * 8);
+					$ret->append(ord($this->rbytes(1)), 8);
 				}
 				return $ret->getValue();
-			} else {
-				return $this->rbytes($len);
 			}
 		} else {
 			return $this->readBits($len * 8);
@@ -129,16 +126,17 @@ abstract class Stream {
 	 *
 	 * @access public
 	 * @param  integer $len Number of bits to read
+	 * @param  bool $asBinaryString Boolean flag determing wheter to return a binary string or a number
 	 * @return string|boolean Binary read data from the byte stream or false if the stream is finished already
 	 */
-	public function readBits($len) {
+	public function readBits(int $len, bool $asBinaryString = false) {
 		if($len === 0) {
-			return "";
+			return ($asBinaryString ? "" : 0);
 		}
 
 		//if no byte has been started and the number is even, simply use the byte reading method
 		if($this->currentbyte === null && $len % 8 == 0) {
-			return $this->rbytes($len / 8);
+			return $this->readBytes($len / 8, $asBinaryString);
 		}
 
 		$ret = new BitArray($len);
@@ -163,7 +161,9 @@ abstract class Stream {
 		} else {
 			//read the remaining bits first
 			$bitsremaining = 8 - $this->byteshift;
-			$ret->append($this->readBits($bitsremaining), $bitsremaining);
+			//get the bitmask e.g. 00000111 for 3
+			$bitmask = self::$includeBitmask[$bitsremaining - 1];
+			$ret->append($this->currentbyte & $bitmask, $bitsremaining);
 
 			//decrease len by the amount bits remaining
 			$len -= $bitsremaining;
@@ -178,8 +178,7 @@ abstract class Stream {
 						//no more bytes
 						return false;
 					}
-					$byte = $this->rbytes(1);
-					$ret->append($byte, 8);
+					$ret->append(ord($this->rbytes(1)), 8);
 				}
 
 				//reduce len to the rest of the requested number
@@ -235,7 +234,7 @@ abstract class Stream {
 	 * wrapper method around unpack() to read an unsigned 16 bit integer from the byte stream
 	 *
 	 * @access public
-	 * @param  boolean bigendian | boolean determing wheter a big endian should be used
+	 * @param  boolean $bigendian Boolean determing wheter a big endian should be used
 	 * @return the next two bytes as an unsigned 16 bit integer or false if the stream is finished already
 	 */
 	public function readUInt16($bigendian = true) {
@@ -258,7 +257,7 @@ abstract class Stream {
 	 * wrapper method around unpack() to read an unsigned 32 bit integer from the byte stream
 	 *
 	 * @access public
-	 * @param  boolean bigendian | boolean determing wheter a big endian should be used
+	 * @param  boolean $bigendian Boolean determing wheter a big endian should be used
 	 * @return the next 4 bytes as an unsigned 32 bit integer or false if the stream is finished already
 	 */
 	public function readUInt32($bigendian = true) {
@@ -390,15 +389,12 @@ abstract class Stream {
 	 *
 	 * @access public
 	 * @param  integer $len The length of the requested string
+	 * @param  bool $asBinaryString Boolean flag determing wheter to return a binary string or a number
 	 * @return string with the read bytes
 	 */
-	public function readAlignedBytes(int $len) {
+	public function readAlignedString(int $len, bool $asBinaryString = true) {
 		$this->align();
-		$ret = $this->readBytes($len);
-		if($ret === false) {
-			return "";
-		}
-		return $ret;
+		return $this->readBytes($len, $asBinaryString);
 	}
 
 	/**
