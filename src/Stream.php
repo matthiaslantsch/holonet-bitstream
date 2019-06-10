@@ -95,9 +95,10 @@ abstract class Stream {
 	 * @access public
 	 * @param  int $len Number of bytes to read
 	 * @param  bool $asBinaryString Boolean flag determing wheter to return a binary string or a number
+	 * @param  bool $bigendian Boolean determing wheter a big endian should be used
 	 * @return string|boolean Binary read data from the byte stream or false if the stream is finished already
 	 */
-	public function readBytes(int $len, bool $asBinaryString = false) {
+	public function readBytes(int $len, bool $asBinaryString = false, bool $bigendian = true) {
 		if($len === 0) {
 			return ($asBinaryString ? "" : 0);
 		}
@@ -109,13 +110,17 @@ abstract class Stream {
 			} else {
 				$ret = new BitArray($len * 8);
 				for ($i = 0; $i < $len; $i++) {
-					//append the read 20 bytes to the bit array
-					$ret->append(ord($this->rbytes(1)), 8);
+					//append the read 1 byte to the bit array
+					if($bigendian) {
+						$ret->append(ord($this->rbytes(1)), 8);
+					} else {
+						$ret->prepend(ord($this->rbytes(1)), 8);
+					}
 				}
 				return $ret->getValue();
 			}
 		} else {
-			return $this->readBits($len * 8);
+			return $this->readBits($len * 8, $asBinaryString, $bigendian);
 		}
 	}
 
@@ -127,16 +132,17 @@ abstract class Stream {
 	 * @access public
 	 * @param  integer $len Number of bits to read
 	 * @param  bool $asBinaryString Boolean flag determing wheter to return a binary string or a number
+	 * @param  bool $bigendian Boolean determing wheter a big endian should be used
 	 * @return string|boolean Binary read data from the byte stream or false if the stream is finished already
 	 */
-	public function readBits(int $len, bool $asBinaryString = false) {
+	public function readBits(int $len, bool $asBinaryString = false, bool $bigendian = true) {
 		if($len === 0) {
 			return ($asBinaryString ? "" : 0);
 		}
 
 		//if no byte has been started and the number is even, simply use the byte reading method
 		if($this->currentbyte === null && $len % 8 == 0) {
-			return $this->readBytes($len / 8, $asBinaryString);
+			return $this->readBytes($len / 8, $asBinaryString, $bigendian);
 		}
 
 		$ret = new BitArray($len);
@@ -153,7 +159,11 @@ abstract class Stream {
 			$bitmask = self::$includeBitmask[$len - 1];
 
 			//can be satisfied with the remaining bits
-			$ret->append($this->currentbyte & $bitmask, $len);
+			if($bigendian) {
+				$ret->append($this->currentbyte & $bitmask, $len);
+			} else {
+				$ret->prepend($this->currentbyte & $bitmask, $len);
+			}
 
 			//shift by len
 			$this->currentbyte >>= $len;
@@ -163,7 +173,11 @@ abstract class Stream {
 			$bitsremaining = 8 - $this->byteshift;
 			//get the bitmask e.g. 00000111 for 3
 			$bitmask = self::$includeBitmask[$bitsremaining - 1];
-			$ret->append($this->currentbyte & $bitmask, $bitsremaining);
+			if($bigendian) {
+				$ret->append($this->currentbyte & $bitmask, $bitsremaining);
+			} else {
+				$ret->prepend($this->currentbyte & $bitmask, $bitsremaining);
+			}
 
 			//decrease len by the amount bits remaining
 			$len -= $bitsremaining;
@@ -178,7 +192,11 @@ abstract class Stream {
 						//no more bytes
 						return false;
 					}
-					$ret->append(ord($this->rbytes(1)), 8);
+					if($bigendian) {
+						$ret->append(ord($this->rbytes(1)), 8);
+					} else {
+						$ret->prepend(ord($this->rbytes(1)), 8);
+					}
 				}
 
 				//reduce len to the rest of the requested number
@@ -187,7 +205,11 @@ abstract class Stream {
 
 			//read a new byte to get the rest required
 			$newbyte = $this->readBits($len);
-			$ret->append($newbyte, $len);
+			if($bigendian) {
+				$ret->append($newbyte, $len);
+			} else {
+				$ret->prepend($newbyte, $len);
+			}
 		}
 
 		if($this->byteshift === 8) {
@@ -195,6 +217,7 @@ abstract class Stream {
 			$this->currentbyte = null;
 		}
 
+		//var_dump("Read int of size {$len} at offset {$this->offset()}: {$ret->getValue()}");
 		return $ret->getValue();
 	}
 
@@ -346,7 +369,7 @@ abstract class Stream {
 	 */
 	public function readCString() {
 		$ret = "";
-		while(ord($byte = $this->readByte()) != 0) {
+		while(ord($byte = $this->readByte(true)) != 0) {
 			$ret .= $byte;
 		}
 		return $ret;

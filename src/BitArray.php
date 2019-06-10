@@ -39,6 +39,14 @@ class BitArray {
 	private $value;
 
 	/**
+	 * property containing a counter of the actual size in bits
+	 *
+	 * @access private
+	 * @var    integer $size The size of our number in bits
+	 */
+	private $size;
+
+	/**
 	 * constructor method taking the size of the new array in bits
 	 *
 	 * @access public
@@ -47,6 +55,7 @@ class BitArray {
 	 */
 	public function __construct($sizeInBits) {
 		$this->gmp = (($sizeInBits / 8) > PHP_INT_SIZE);
+		$this->size = 0;
 	}
 
 	/**
@@ -71,6 +80,7 @@ class BitArray {
 				$this->value = ($this->value << $sizeInBits) | $bits;
 			}
 		}
+		$this->size += $sizeInBits;
 	}
 
 	/**
@@ -84,17 +94,18 @@ class BitArray {
 	public function prepend($bits, $sizeInBits) {
 		if($this->value === null) {
 			if($this->gmp) {
-				$this->value = gmp_init($this->readBits($bits), 10);
+				$this->value = gmp_init($bits, 10);
 			} else {
 				$this->value = $bits;
 			}
 		} else {
 			if($this->gmp) {
-				$this->value = gmp_or($this->gmp_shiftr($this->value, $sizeInBits), $bits);
+				$this->value = gmp_or($this->value, ($bits << $this->size));
 			} else {
-				$this->value = ($this->value >> $sizeInBits) | $bits;
+				$this->value = $this->value | ($bits << $this->size);
 			}
 		}
+		$this->size += $sizeInBits;
 	}
 
 	/**
