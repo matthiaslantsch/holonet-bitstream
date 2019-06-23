@@ -58,7 +58,7 @@ class BinStruct extends BinNode {
 	 * parse() method reading the subtree and parsing the structure on a stream
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed array or object if given
 	 */
 	public function parse(Stream $stream) {
@@ -81,6 +81,29 @@ class BinStruct extends BinNode {
 			return new $this->class(...array_values($this->data));
 		} else {
 			return $this->data;
+		}
+	}
+
+	/**
+	 * compose() method reading the definition and composing the given data to binary
+	 *
+	 * @access public
+	 * @param  Stream $stream The stream object to write to
+	 * @param  array $data The array to be written
+	 * @return void
+	 */
+	public function compose(Stream $stream, array $data) {
+		$this->data = $data;
+
+		foreach ($this->tree as $key => $subnode) {
+			if(is_string($key)) {
+				$value = $this->getKeyVal($key);
+				if($subnode instanceof BinNode) {
+					$subnode->compose($stream, $value);
+				}
+			} else {
+				throw new InvalidFormatException("Cannot write with a format that has BinStruct with ignored members in it", 1020);
+			}
 		}
 	}
 
@@ -109,6 +132,26 @@ class BinStruct extends BinNode {
 		} else {
 			$position = $value;
 		}
+	}
+
+	/**
+	 * helper function used to recursively get a value with a multilevel key
+	 *
+	 * @access protected
+	 * @param  string $key The key to get the value below
+	 * @return mixed the value under the key
+	 */
+	protected function getKeyVal(string $key, $value) {
+		$position = &$this->data;
+		$parts = explode(">>>", $key);
+		foreach ($parts as $sublevel) {
+			//check if the current cursor position has the next sub index
+			if(isset($position[$sublevel])) {
+				$position = $position[$sublevel];
+			}
+		}
+
+		return $position;
 	}
 
 }

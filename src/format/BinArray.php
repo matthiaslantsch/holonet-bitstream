@@ -12,6 +12,7 @@
 
 namespace holonet\bitstream\format;
 
+use RuntimeException;
 use holonet\bitstream\Stream;
 
 /**
@@ -58,7 +59,7 @@ class BinArray extends BinNode {
 	 * parse() method reading the subtree and parsing the structure on a stream
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed array of subtrees read
 	 */
 	public function parse(Stream $stream) {
@@ -81,6 +82,27 @@ class BinArray extends BinNode {
 			}
 
 			return $ret;
+		}
+	}
+
+	/**
+	 * compose() method reading the subtree and composing the given data to a binary string
+	 *
+	 * @access public
+	 * @param  Stream $stream The stream object to write to
+	 * @param  array $data The data to be written
+	 * @return void
+	 */
+	public function compose(Stream $stream, array $data) {
+		$sizeCheck = $this->composeSizeDefinition($stream, $this->size, count($data));
+
+		//check if we have too many or too little items
+		if($sizeCheck !== null && $sizeCheck !== count($data)) {
+			throw new RuntimeException("Error writing BinArray, expected a fixed number of {$sizeCheck} items, got ".count($data), 1006);
+		}
+
+		foreach ($data as $entry) {
+			$this->tree->compose($stream, $entry);
 		}
 	}
 

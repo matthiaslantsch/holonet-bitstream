@@ -59,7 +59,7 @@ class BinSkip extends BinNode {
 	 * parse() method skiping the given amount of bytes
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed array of object if given
 	 */
 	public function parse(Stream $stream) {
@@ -70,6 +70,17 @@ class BinSkip extends BinNode {
 		}
 
 		$stream->readBytes($sizeActual);
+	}
+
+	/**
+	 * compose() method reading the definition and composing the given data to binary
+	 *
+	 * @access public
+	 * @param  Stream $stream The stream object to write to
+	 * @return void
+	 */
+	public function compose(Stream $stream) {
+		throw new InvalidFormatException("Cannot write with a format that has BinSkip in it", 1010);
 	}
 
 }

@@ -56,7 +56,7 @@ class BinChoice extends BinNode {
 	 * parse() method checking the condition and reading the tree if given
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed read data translated by this class
 	 */
 	public function parse(Stream $stream) {
@@ -73,6 +73,23 @@ class BinChoice extends BinNode {
 			return $this->map[$mappingValue]->parse($stream);
 		} else {
 			return $this->map[$mappingValue];
+		}
+	}
+
+	/**
+	 * compose() method reading the definition and composing the given data to a binary string
+	 *
+	 * @access public
+	 * @param  Stream $stream The stream object to write to
+	 * @param  mixed $data The boolean to be written
+	 * @param  mixed $choice The actual choice to be written before the data
+	 * @return void
+	 */
+	public function compose(Stream $stream, $data, $choice) {
+		$this->tree->compose($stream, $choice);
+
+		if($this->map[$choice] instanceof BinNode) {
+			$this->map[$choice]->compose($data);
 		}
 	}
 

@@ -13,6 +13,7 @@
 namespace holonet\bitstream\format;
 
 use holonet\bitstream\Stream;
+use holonet\bistream\BitArray;
 
 /**
  * BinInteger is reprensenting an number in the binary structure
@@ -67,7 +68,7 @@ class BinInteger extends BinNode {
 	 * parse() method reading the number from the stream
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed scalar value read from the stream
 	 */
 	public function parse(Stream $stream) {
@@ -80,6 +81,25 @@ class BinInteger extends BinNode {
 
 
 		return ($stream->readBits($size, false, ($this->endian === "big_endian")) + $this->constant);
+	}
+
+	/**
+	 * compose() method reading the definition and composing the given data to binary
+	 *
+	 * @access public
+	 * @param  Stream $stream The stream object to write to
+	 * @param  string $data The integer to be written
+	 * @return void
+	 */
+	public function compose(Stream $stream, string $data) {
+		if($this->size === 0) {
+			return;
+		}
+
+		$actualSize = BitArray::integerSize($data);
+		$this->composeSizeDefinition($stream, $this->size, $actualSize);
+
+		$stream->writeBits($data, $actualSize);
 	}
 
 }

@@ -52,6 +52,29 @@ abstract class BinNode {
 	}
 
 	/**
+	 * composeSizeDefinition() method turning a size defining parameter into binary data
+	 *
+	 * @access protected
+	 * @param  Stream $stream The stream object to read from
+	 * @param  mixed $sizeDef Different possible size definitions
+	 * @param  int $actualSize The actual size of the parsed data
+	 * @return integer|null with size definition if the size is not a written node
+	 */
+	protected function composeSizeDefinition(Stream $stream, $sizeDef, $actualSize) {
+		if($sizeDef instanceof BinNode) {
+			$sizeDef->compose($stream, $actualSize);
+		} elseif(is_callable($sizeDef)) {
+			return $this->composeSizeDefinition($stream, $sizeDef(), $actualSize);
+		} elseif(is_scalar($sizeDef)) {
+			if($sizeDef !== "read_all") {
+				return intval($sizeDef);
+			}
+		} else {
+			throw new InvalidFormatException("Unknown size definition ".var_export($sizeDef, true), 100);
+		}
+	}
+
+	/**
 	 * force the child class to implement a parse() method
 	 * that parses the Node using a stream object
 	 *

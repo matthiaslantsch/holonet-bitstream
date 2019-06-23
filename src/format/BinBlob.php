@@ -57,7 +57,7 @@ class BinBlob extends BinNode {
 	 * parse() method reading the string from the stream
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed scalar value read from the stream
 	 */
 	public function parse(Stream $stream) {
@@ -71,6 +71,25 @@ class BinBlob extends BinNode {
 		} else {
 			return $ret;
 		}
+	}
+
+	/**
+	 * compose() method reading the definition and composing the given data to a binary string
+	 *
+	 * @access public
+	 * @param  Stream $stream The stream object to write to
+	 * @param  string $data The string to be written
+	 * @return void
+	 */
+	public function compose(Stream $stream, string $data) {
+		$sizeCheck = $this->composeSizeDefinition($stream, $this->size, strlen($data));
+
+		//check if we have too many or too little bytes
+		if($sizeCheck !== null && $sizeCheck !== strlen($data)) {
+			throw new RuntimeException("Error writing BinBlob, expected a fixed number of {$sizeCheck} bytes, got ".strlen($data), 1007);
+		}
+
+		$stream->writeBytes($data);
 	}
 
 }

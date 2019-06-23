@@ -55,7 +55,7 @@ class BinOptional extends BinNode {
 	 * parse() method checking the condition and reading the tree if given
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed read data translated by this class
 	 */
 	public function parse(Stream $stream) {
@@ -71,6 +71,28 @@ class BinOptional extends BinNode {
 
 		if($condition) {
 			return $this->tree->parse($stream);
+		}
+	}
+
+	/**
+	 * compose() method reading the definition and composing the given data to binary
+	 *
+	 * @access public
+	 * @param  Stream $stream The stream object to write to
+	 * @param  string $data The integer to be written
+	 * @return void
+	 */
+	public function compose(Stream $stream, string $data) {
+		if(is_callable($this->condition)) {
+			die("How would I write this");
+		} elseif($this->condition instanceof BinNode) {
+			$this->condition->compose($stream, ($data !== null ? true : false));
+		} elseif(!is_scalar($this->condition)) {
+			throw new InvalidFormatException("Unknown condition definition ".var_export($this->condition, true), 103);
+		}
+
+		if($data !== null) {
+			$this->tree->compose($stream, $data);
 		}
 	}
 

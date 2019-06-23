@@ -57,7 +57,7 @@ class BinTranslate extends BinNode {
 	 * parse() method reading the tree and applying the translation to it
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed read data translated by this class
 	 */
 	public function parse(Stream $stream) {
@@ -78,6 +78,30 @@ class BinTranslate extends BinNode {
 		}
 
 		return $this->data;
+	}
+
+	/**
+	 * compose() method reading the definition and composing the given data to a binary string
+	 *
+	 * @access public
+	 * @param  Stream $stream The stream object to write to
+	 * @param  mixed $data The boolean to be written
+	 * @return void
+	 */
+	public function compose(Stream $stream, $data) {
+		if(is_callable($this->translation)) {
+			throw new InvalidFormatException("Cannot write with a format that has BinTranslate with a read callback in it", 1030);
+		} elseif(is_array($this->translation)) {
+			//assume it's a map for translation
+			if(($writeData = array_search($data, $this->translation)) === false) {
+				//@TODO fail silently??
+				$writeData = $readData;
+			}
+		} else {
+			throw new InvalidFormatException("Unknown translation definition ".var_export($this->translation, true), 102);
+		}
+
+		$this->tree->compose($stream, $writeData);
 	}
 
 }

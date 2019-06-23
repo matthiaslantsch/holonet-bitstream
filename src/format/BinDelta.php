@@ -65,7 +65,7 @@ class BinDelta extends BinNode {
 	 * the delta and returning the result
 	 *
 	 * @access public
-	 * @param  Stream $strean The stream object to read from
+	 * @param  Stream $stream The stream object to read from
 	 * @return mixed read data added to the old values
 	 */
 	public function parse(Stream $stream) {
