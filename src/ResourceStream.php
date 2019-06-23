@@ -45,13 +45,15 @@ class ResourceStream extends Stream {
 	);
 
 	/**
-	 * constructor method taking the stream resource as the only argument
+	 * constructor method taking the stream resource as an argument
 	 *
 	 * @access public
 	 * @param  resource $stream The opened stream resource to work with
+	 * @param  boolean $bigendian Boolean flag telling wheter to use bigendian
 	 * @return void
 	 */
-	public function __construct($stream) {
+	public function __construct($stream, boolean $bigendian = true) {
+		parent::__construct($bigendian);
 		if (!is_resource($stream)) {
 			throw new InvalidArgumentException('A Stream object requires a stream resource as constructor argument');
 		}

@@ -18,7 +18,7 @@ namespace holonet\bitstream;
  * @author  matthias.lantsch
  * @package holonet\bitstream
  */
-class NetworkStream extends Stream {
+class NetworkStream extends ResourceStream {
 
 	/**
 	 * static instanciator method that works with an address

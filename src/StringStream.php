@@ -34,9 +34,11 @@ class StringStream extends Stream {
 	 *
 	 * @access public
 	 * @param  string $content The string to work with
+	 * @param  boolean $bigendian Boolean flag telling wheter to use bigendian
 	 * @return void
 	 */
-	public function __construct(string $content) {
+	public function __construct(string $content, boolean $bigendian = true) {
+		parent::__construct($bigendian);
 		$this->stream = $content;
 		$this->isOpen = true;
 	}
