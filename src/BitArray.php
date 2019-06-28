@@ -33,18 +33,18 @@ class BitArray {
 	/**
 	 * property containing the actual value (might me a normal integer or a gmp number)
 	 *
-	 * @access private
+	 * @access public
 	 * @var    integer|gmp $value The property actually holding the binary value
 	 */
-	private $value;
+	public $value;
 
 	/**
 	 * property containing a counter of the actual size in bits
 	 *
-	 * @access private
+	 * @access public
 	 * @var    integer $size The size of our number in bits
 	 */
-	private $size;
+	public $size;
 
 	/**
 	 * constructor method taking the size of the new array in bits
@@ -53,7 +53,7 @@ class BitArray {
 	 * @param  integer $sizeInBits The size of the new binary array in bits
 	 * @return void
 	 */
-	public function __construct(integer $sizeInBits) {
+	public function __construct(int $sizeInBits) {
 		$this->gmp = (($sizeInBits / 8) > PHP_INT_SIZE);
 		$this->size = 0;
 	}
@@ -67,7 +67,7 @@ class BitArray {
 	 * @param  integer $sizeInBits The size of the new binary data in bits (if not specified, will be counted)
 	 * @return void
 	 */
-	public function push(integer $bits, integer $sizeInBits = null) {
+	public function push(int $bits, int $sizeInBits = null) {
 		if($sizeInBits === null) {
 			$sizeInBits = static::integerSize($bits);
 		}
@@ -96,16 +96,17 @@ class BitArray {
 	 * @param  integer $sizeInBits The size of the requested binary data in bits
 	 * @return integer with the read binary number
 	 */
-	public function pop(integer $sizeInBits) {
+	public function pop(int $sizeInBits) {
 		if($this->value === null) {
 			return null;
 		} else {
+			$mask = ((1 << $sizeInBits) - 1);
 			if($this->gmp) {
-				$ret = gmp_or($this->value, (0 << $bits));
-				$this->value = gmp_shiftr($this->value, $bits);
+				$ret = gmp_and($this->value, $mask);
+				$this->value = $this->gmp_shiftr($this->value, $sizeInBits);
 			} else {
-				$ret = $this->value | ((0 << $bits));
-				$this->value = ($this->value >> $bits);
+				$ret = ($mask & $this->value);
+				$this->value >>= $sizeInBits;
 			}
 		}
 		$this->size -= $sizeInBits;
@@ -121,7 +122,7 @@ class BitArray {
 	 * @param  integer $sizeInBits The size of the new binary data in bits (if not specified, will be counted)
 	 * @return void
 	 */
-	public function unshift(integer $bits, integer $sizeInBits = null) {
+	public function unshift(int $bits, int $sizeInBits = null) {
 		if($sizeInBits === null) {
 			$sizeInBits = static::integerSize($bits);
 		}
@@ -143,23 +144,24 @@ class BitArray {
 	}
 
 	/**
-	 * prepend binary data to the BitArray
+	 * remove binary data from the beginning of the BitArray
 	 * essentially shifts the current integer $sizeInBits to the right and or's the bits onto the start
 	 *
 	 * @access public
 	 * @param  integer $sizeInBits The size of the requested binary data in bits
 	 * @return integer with the read binary number
 	 */
-	public function shift(integer $sizeInBits) {
+	public function shift(int $sizeInBits) {
 		if($this->value === null) {
 			return null;
 		} else {
+			$extractPosFromRight = $this->size - $sizeInBits;
 			if($this->gmp) {
-				$ret = gmp_or($this->value, ((0 << $bits)));
-				$this->value = gmp_shiftr($this->value, $bits);
+				$ret = $this->gmp_shiftr($this->value, $extractPosFromRight);
+				$this->value = gmp_xor($this->value, ($ret << $extractPosFromRight));
 			} else {
-				$ret = $this->value | ((0 << $bits));
-				$this->value = ($this->value >> $bits);
+				$ret = $this->value >> $extractPosFromRight;
+				$this->value = $this->value ^ ($ret << $extractPosFromRight);
 			}
 		}
 		$this->size -= $sizeInBits;
@@ -193,7 +195,7 @@ class BitArray {
 	/**
 	 * method used generate a hex code from the contained bytes
 	 *
-	 * @access private
+	 * @access public
 	 * @return string hex code representation of the contained bytes
 	 */
 	public function getHexCode() {
@@ -207,7 +209,7 @@ class BitArray {
 	/**
 	 * method used return the actual finished read value
 	 *
-	 * @access private
+	 * @access public
 	 * @return mixed read binary data
 	 */
 	public function getValue() {
@@ -221,15 +223,15 @@ class BitArray {
 	/**
 	 * method used transform the internal number to a binary string
 	 *
-	 * @access private
+	 * @access public
 	 * @param  boolean $bigendian Boolean flag telling wheter to use bigendian
 	 * @return mixed binary data
 	 */
-	public function getBinary(boolean $bigendian = true) {
+	public function getBinary(bool $bigendian = true) {
 		if($this->gmp) {
 			return gmp_export($this->value, 1, GMP_LSW_FIRST | ($bigendian ? GMP_BIG_ENDIAN : GMP_LITTLE_ENDIAN ));
 		} else {
-			$ret = return pack("C*", $this->value);
+			$ret = pack("C*", $this->value);
 			//if we have small endian, we need to reverse it
 			if(!$bigendian) {
 				$ret = strrev($ret);
@@ -241,12 +243,12 @@ class BitArray {
 	/**
 	 * method used to initialise a BitArray object using a binary string
 	 *
-	 * @access private
+	 * @access public
 	 * @param  string $binary The binary string to transform into a bit array
 	 * @param  boolean $bigendian Boolean flag telling wheter to use bigendian
 	 * @return BitArray object from the binary string
 	 */
-	public static function fromBinary(string $binary, boolean $bigendian = true) {
+	public static function fromBinary(string $binary, bool $bigendian = true) {
 		$ret = new static(strlen($binary) * 8);
 		if($ret->gmp) {
 			$ret->value = gmp_import($binary, 1, GMP_LSW_FIRST | ($bigendian ? GMP_BIG_ENDIAN : GMP_LITTLE_ENDIAN ));
@@ -266,22 +268,45 @@ class BitArray {
 	}
 
 	/**
-	 * method used to count the actual number of bits in an integer
+	 * method used to initialise a BitArray object using a normal number
 	 *
-	 * @access private
+	 * @access public
+	 * @param  int $number The number to create a bitarray object from
+	 * @param  integer $sizeInBits The size of the given number in bits (optional)
+	 * @return BitArray object from the number
+	 */
+	public static function fromNumber(int $number, int $size = null) {
+		if($size === null) {
+			$size = static::integerSize($number);
+		}
+
+		$ret = new static($size);
+		$ret->push($number);
+		return $ret;
+	}
+
+	/**
+	 * method used to count the actual number of bits in an integer
+	 * @TODO maybe decbin would actually be faster...
+	 *
+	 * @access public
 	 * @param  int $integer The integer to get the size for
 	 * @return int with the size in bits
 	 */
 	public static function integerSize(int $integer) {
-		//make sure we have all bits that are in the integer set
-		$integer = $integer | ~ $integer;
-		$mask = 1;
-		$count = 0;
-		while ($integer & $mask) {
-			$count++;
-			$mask = $mask << 1;
+		$high = 1;
+		$size = 1;
+
+		while ($high < PHP_INT_MAX) {
+			if($integer >= $high && $integer < ($high << 1)) {
+				return $size;
+			}
+
+			$high <<= 1;
+			$size++;
 		}
-		return $count;
+
+		return (PHP_INT_SIZE * 8);
 	}
 
 }

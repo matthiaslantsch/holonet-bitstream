@@ -11,8 +11,20 @@
 	"autoload": {
 		"psr-4": {"holonet\\bitstream\\": "src"}
 	},
+	"autoload-dev": {
+		"psr-4" : {"holonet\\bitstream\\tests\\" : "tests"}
+	},
 	"require": {
 		"holonet/common": "dev-develop",
 		"ext-gmp": "*"
-	}
+	},
+	"require-dev": {
+		"phpunit/phpunit": "*"
+	},
+	"repositories": [
+		{
+			"type": "git",
+			"url": "https://github.com/matthiaslantsch/holonet-common.git"
+		}
+	]
 }

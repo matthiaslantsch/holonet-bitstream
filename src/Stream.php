@@ -1,4 +1,4 @@
-32<?php
+<?php
 /**
  * This file is part of the bitstream package
  * (c) Matthias Lantsch
